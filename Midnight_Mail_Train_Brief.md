@@ -1,184 +1,88 @@
 # Week 5: Midnight Mail Train
 
-## GitHub Classroom Assignment Brief
+## Summary
 
-- **Repo name:** `ds26-wk05-midnight-mail-train-<student>`
-- **Due:** Friday, 23:59 KST
-- **Python version:** 3.11+
-- **Allowed libraries:** stdlib only
+This project builds small tools for a late-night rail delivery company. It covers a doubly linked list for managing train cars, a ticket code validator, and two recursive functions for counting labels and cleaning radio messages.
 
-### Graded Files
+## Approach
 
-- `src/challenges.py`
-- `tests/test_challenges.py`
-- `README.md`
+### Problem 1 — Train Cars DLL
 
-## Story
-
-A late-night rail company is trying to keep its deliveries moving across the city. Your job is to help the control team build and test small tools for train cars, ticket checks, and message handling.
-
-Each problem is short, but each one checks an important idea from class.
-
-## Standards Targeted
-
-- **Primary:** S8 — Recursion + Call Stack Thinking
-- **Supporting:** S1 — Python + Testing Fundamentals
-- **Supporting:** S9 — Linked Lists
-- **Cross-cutting:** S3 — Big-O Reasoning
-
-## Instructions
-
-### What to Do
-
-1. Open the starter repo.
-2. Complete the required work in `src/challenges.py`.
-3. Run tests with `pytest -q`.
-4. Add any required missing tests in `tests/test_challenges.py`.
-5. Update `README.md`.
-6. Push your work and open a PR.
-
-### Requirements
-
-- Use Python classes where the problem asks for classes.
-- Use recursion where the problem says to use recursion.
-- Do not use loops in the recursion problems.
-- Use type hints on public functions.
-- Keep code clear and readable.
-
-## README Requirements
-
-Your `README.md` must include:
-
-- Summary
-- Approach
-- Complexity
-- Edge-case checklist
-- Assistance & Sources
-
-## Required Problems
-
-### Problem 1 — Train Cars in Reverse (DLL)
-
-The Midnight Mail Train needs to keep track of train cars in order. Workers sometimes need to inspect the train from the back.
-
-#### Build
-
-- `TrainCarNode`
-- `MidnightMailDLL`
-
-#### Implement Methods
-
-- `append_car(car_id: str) -> None`
-- `detach_last_car() -> str | None`
-- `to_reverse_list() -> list[str]`
-
-#### Rules
-
-- This must be a doubly linked list.
-- The node class stores one car and its links.
-- The list class manages the overall structure.
-
-#### Edge Cases to Handle
-
-- empty train
-- one train car
-- several train cars
+`MidnightMailDLL` is a doubly linked list where each `TrainCarNode` holds a `car_id` and pointers to both the previous and next node. Keeping a `tail` pointer makes `append_car` and `detach_last_car` O(1) — no traversal needed. `to_reverse_list` walks backwards from `tail` using `.prev` links.
 
 ### Problem 2 — Ticket Code Check
 
-Every delivery ticket code must follow the company rule:
+`is_valid_ticket_code` uses `str.startswith` to check the `"MM-"` prefix, then slices the remainder and checks that it is exactly 4 characters long and all digits with `isdigit()`. No regex needed.
 
-- it starts with `"MM-"`
-- it ends with exactly 4 digits
+### Problem 3 — Count Priority Labels (Recursion)
 
-#### Implement
+**Base case:** empty list → return 0.  
+**Recursive step:** check if the first element matches the target (1 or 0), then add the result of calling the function on the rest of the list.
 
-- `is_valid_ticket_code(code: str) -> bool`
+### Problem 4 — Clean Radio Message (Recursion)
 
-#### Testing Requirement
+**Base case:** empty string → return `""`.  
+**Recursive step:** if the first character is a space, skip it; otherwise keep it. Concatenate with the result of calling the function on the remaining string.
 
-In `tests/test_challenges.py`, you must include tests for:
+### Stretch — Iterative Versions
 
-- 1 valid case
-- 2 invalid cases
-- 1 edge case
+Both iterative versions are included in `src/challenges.py`.
 
-#### Example Ideas
+- `count_priority_labels_iterative` uses a generator expression inside `sum()`.
+- `clean_radio_message_iterative` uses `str.replace(" ", "")`.
 
-- `"MM-1234"` → `True`
-- `"MM-12"` → `False`
-- `"XX-1234"` → `False`
-- `""` → `False`
+**Comparison:**
 
-### Problem 3 — Count Priority Packages (Recursion)
+| | Recursive | Iterative |
+|---|---|---|
+| Clarity | Clear intent, mirrors the problem definition | Shorter, more Pythonic |
+| Call stack space | O(n) — one frame per element/character | O(1) — no stack growth |
+| Risk | Stack overflow on very large inputs | None |
 
-The control room has a list of package labels. It wants to know how many are marked with a target label.
+The iterative versions are safer for large inputs. The recursive versions are closer to how the problem is described and make the base case and step explicit, which is useful for learning.
 
-#### Implement
+## Complexity
 
-- `count_priority_labels(labels: list[str], target: str) -> int`
+| Function | Time | Space |
+|---|---|---|
+| `append_car` | O(1) | O(1) |
+| `detach_last_car` | O(1) | O(1) |
+| `to_reverse_list` | O(n) | O(n) |
+| `is_valid_ticket_code` | O(1) | O(1) |
+| `count_priority_labels` | O(n) | O(n) call stack |
+| `clean_radio_message` | O(n) | O(n) call stack + result string |
 
-#### Rules
+`to_reverse_list` is O(n) in both time and space because it visits every node and builds a new list. The recursive functions are O(n) in space due to call stack frames — one frame per element or character.
 
-- Use recursion.
-- Do not use a loop.
-- Return how many times `target` appears.
+## Edge-Case Checklist
 
-#### Example
+### DLL
+- [x] Empty train — `detach_last_car` returns `None`, `to_reverse_list` returns `[]`
+- [x] Single car — detach leaves list fully empty (`head` and `tail` both `None`)
+- [x] Multiple cars — reverse list returns correct order
 
-- `count_priority_labels(["PRIORITY", "NORMAL", "PRIORITY"], "PRIORITY") == 2`
-- `count_priority_labels([], "PRIORITY") == 0`
+### Ticket Code
+- [x] Valid — `"MM-1234"` → `True`
+- [x] Wrong prefix — `"XX-1234"` → `False`
+- [x] Too many digits — `"MM-12345"` → `False`
+- [x] Too few digits — `"MM-12"` → `False`
+- [x] Letters instead of digits — `"MM-abcd"` → `False`
+- [x] Empty string — `""` → `False`
 
-### Problem 4 — Clean the Radio Message (Recursion)
+### Count Priority Labels
+- [x] Empty list → `0`
+- [x] No matches → `0`
+- [x] All match → full count
+- [x] Mixed list → correct count
 
-The radio system sometimes adds spaces to short emergency messages. The control room wants a cleaned version with all spaces removed.
+### Clean Radio Message
+- [x] Empty string → `""`
+- [x] No spaces → unchanged
+- [x] Only spaces → `""`
+- [x] Leading and trailing spaces → removed
 
-#### Implement
+## Assistance & Sources
 
-- `clean_radio_message(message: str) -> str`
-
-#### Rules
-
-- Use recursion.
-- Do not use a loop.
-- Return a new string with all spaces removed.
-
-#### Example
-
-- `clean_radio_message("go now") == "gonow"`
-- `clean_radio_message(" a b ") == "ab"`
-- `clean_radio_message("") == ""`
-
-## Optional Stretch — Recursive Refactor
-
-Write an iterative version of one recursion problem and add a short note in `README.md` comparing the two approaches.
-
-### Suggested Options
-
-- `count_priority_labels_iterative(labels: list[str], target: str) -> int`
-- `clean_radio_message_iterative(message: str) -> str`
-
-### Stretch Goal
-
-Explain:
-
-- which version feels clearer
-- which version uses call stack space
-
-## What Earns Meets vs Exceeds
-
-### Meets
-
-- code works
-- tests pass
-- recursive problems use a correct base case and recursive step
-- DLL methods work for normal cases
-- README includes complexity and edge cases
-
-### Exceeds
-
-- strong edge-case handling
-- clear, well-named code
-- better-than-minimum tests
-- good complexity explanations
-- thoughtful iterative vs recursive comparison on the stretch
+- Course slides — Week 5 (Recursion, Linked Lists)
+- Python docs — [`str.isdigit`](https://docs.python.org/3/library/stdtypes.html#str.isdigit), [`str.startswith`](https://docs.python.org/3/library/stdtypes.html#str.startswith)
+- No AI assistance used
